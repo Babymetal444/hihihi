@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>숏폼온 AI 대시보드 - 숏폼 콘티 · AR 3x3 · 캘린더 · 리뷰</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .lemon-pill {
+            background-color: #fef9c3;
+            color: #854d0e;
+            border: 1px solid #fde047;
+        }
+        .lemon-btn {
+            background-color: #fde047;
+            color: #0f172a;
+        }
+        .lemon-btn:hover {
+            background-color: #facc15;
+        }
+        .lemon-active-nav {
+            background-color: #fef9c3;
+            color: #0f172a;
+            border: 1px solid #facc15;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-yellow-300 selection:text-slate-900">
+
+    <!-- Top Header -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200/80">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+            <div class="flex items-center space-x-3 min-w-0">
+                <a href="index.html" class="flex items-center space-x-2 shrink-0">
+                    <div class="w-8 h-8 rounded-lg lemon-btn flex items-center justify-center font-black text-sm shadow-sm">
+                        <i class="fa-solid fa-clapperboard"></i>
+                    </div>
+                    <span class="font-extrabold text-base tracking-tight text-slate-900">숏폼온 AI</span>
+                </a>
+                <span id="header-page-title" class="text-sm font-bold text-slate-800 pl-3 border-l border-slate-200 hidden sm:inline">대시보드 개요</span>
+                <span id="header-category-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold lemon-pill shrink-0">카페·디저트</span>
+            </div>
+
+            <div class="flex items-center space-x-2.5">
+                <span id="session-user-chip" class="hidden md:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+                    owner@shortform-on.kr
+                </span>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                    Rule-LLM · DB 활성
+                </span>
+                <button onclick="logoutAndReturn()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                    로그아웃
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="max-w-[1440px] w-full mx-auto flex-1 flex flex-col lg:flex-row">
+
+        <!-- Sidebar -->
+        <aside class="w-full lg:w-64 shrink-0 border-b lg:border-b-0 lg:border-r border-slate-200/80 bg-slate-50/50 p-4 flex flex-col justify-between space-y-6">
+            <nav class="space-y-1.5">
+                <button onclick="switchTab('overview')" id="nav-overview" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm transition lemon-active-nav">
+                    <i class="fa-solid fa-chart-column w-4 text-center"></i>
+                    <span>대시보드 개요</span>
+                </button>
+                <button onclick="switchTab('studio')" id="nav-studio" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+                    <i class="fa-solid fa-wand-magic-sparkles w-4 text-center text-amber-500"></i>
+                    <span>숏폼 콘티 · 카피 스튜디오</span>
+                </button>
+                <button onclick="switchTab('ar')" id="nav-ar" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+                    <i class="fa-solid fa-camera w-4 text-center text-amber-600"></i>
+                    <span>AR 3x3 촬영 뷰어</span>
+                </button>
+                <button onclick="switchTab('calendar')" id="nav-calendar" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+                    <i class="fa-regular fa-calendar-check w-4 text-center"></i>
+                    <span>마케팅 캘린더</span>
+                </button>
+                <button onclick="switchTab('reviews')" id="nav-reviews" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+                    <i class="fa-regular fa-comment-dots w-4 text-center"></i>
+                    <span>AI 고객 리뷰 답글</span>
+                </button>
+            </nav>
+
+            <div class="space-y-4">
+                <div class="rounded-2xl bg-yellow-50/90 border border-yellow-200 p-4 space-y-2.5 shadow-sm">
+                    <p class="text-[11px] font-extrabold text-amber-800">오늘의 숏폼·마케팅 미션</p>
+                    <p class="text-xs text-slate-700 leading-relaxed font-medium">
+                        '비 오는 날 수제 라떼 1+1' 10초 숏폼 콘티를 짜고 AR 그리드로 촬영해 보세요!
+                    </p>
+                    <button onclick="applyMission()" class="w-full py-2 rounded-xl lemon-btn text-xs font-bold transition shadow-sm">
+                        콘티 바로 생성하기
+                    </button>
+                </div>
+
+                <a href="index.html" class="flex items-center space-x-1.5 px-2 text-xs font-semibold text-slate-500 hover:text-slate-900 transition">
+                    <span>← 랜딩 페이지로 이동</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Area -->
+        <main class="flex-1 p-5 sm:p-8 bg-white space-y-6">
+
+            <!-- 1. 개요 -->
+            <section id="tab-overview" class="space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm">
+                        <p class="text-xs font-semibold text-slate-500">저장된 숏폼·홍보 콘텐츠</p>
+                        <p id="kpi-content-count" class="text-2xl font-black text-slate-900 mt-2">4건</p>
+                        <p class="text-[11px] font-semibold text-amber-700 mt-1.5">Rule-LLM 콘티 + 카피</p>
+                    </div>
+                    <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm">
+                        <p class="text-xs font-semibold text-slate-500">예상 3초 훅 유지율</p>
+                        <p class="text-2xl font-black text-emerald-600 mt-2">74.5%</p>
+                        <p class="text-[11px] text-slate-400 mt-1.5">Rule DB 적용 기준</p>
+                    </div>
+                    <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm">
+                        <p class="text-xs font-semibold text-slate-500">미답변 고객 리뷰</p>
+                        <p id="kpi-unanswered-reviews" class="text-2xl font-black text-amber-500 mt-2">1건</p>
+                        <p class="text-[11px] text-slate-400 mt-1.5">AI 감성 답글 대기 중</p>
+                    </div>
+                    <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm">
+                        <p class="text-xs font-semibold text-slate-500">월 절감 제작·대행 비용</p>
+                        <p class="text-2xl font-black text-slate-900 mt-2">120만원</p>
+                        <p class="text-[11px] text-slate-400 mt-1.5">자체 숏폼·마케팅 전환</p>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <h2 class="text-base font-extrabold text-slate-900">최근 생성된 숏폼 콘티 & 마케팅 콘텐츠</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">스튜디오에서 만든 콘티와 홍보 문구가 저장되며, AR 뷰어로 바로 불러올 수 있습니다.</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="switchTab('ar')" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+                                AR 3x3 뷰어 열기
+                            </button>
+                            <button onclick="switchTab('studio')" class="px-4 py-2 rounded-xl lemon-btn text-xs font-bold transition shadow-sm">
+                                + 새 콘티 만들기
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="overview-content-list" class="divide-y divide-slate-100"></div>
+                </div>
+            </section>
+
+            <!-- 2. 숏폼 콘티 · 카피 스튜디오 -->
+            <section id="tab-studio" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm space-y-4">
+                        <h2 class="text-base font-extrabold text-slate-900">1. Rule-LLM 콘티 · 홍보 조건</h2>
+
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold text-slate-600">매장 업종</label>
+                            <select id="studio-category" onchange="updateCategory(this.value)" class="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm font-medium">
+                                <option value="카페·디저트">카페·디저트</option>
+                                <option value="음식점·배달">음식점·배달</option>
+                                <option value="공방·클래스">공방·클래스</option>
+                                <option value="뷰티·네일">뷰티·네일</option>
+                            </select>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold text-slate-600">발행 채널</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button" onclick="selectChannel('인스타그램 릴스')" id="ch-인스타그램 릴스" class="py-2.5 rounded-xl text-xs font-bold lemon-btn transition">인스타그램 릴스</button>
+                                <button type="button" onclick="selectChannel('유튜브 쇼츠')" id="ch-유튜브 쇼츠" class="py-2.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 transition">유튜브 쇼츠</button>
+                                <button type="button" onclick="selectChannel('당근마켓')" id="ch-당근마켓" class="py-2.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 transition">당근마켓</button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold text-slate-600">핵심 메뉴 / 훅 키워드</label>
+                            <input id="studio-keyword" type="text" value="비 오는 날 수제 라떼 1+1" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:border-yellow-400">
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold text-slate-600">예약 발행일</label>
+                            <input id="studio-date" type="date" value="2026-11-25" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:border-yellow-400">
+                        </div>
+
+                        <button onclick="generateStudioPlan()" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-yellow-300"></i>
+                            <span>Rule-LLM 숏폼 콘티 & 카피 생성</span>
+                        </button>
+                    </div>
+
+                    <div class="lg:col-span-7 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-base font-extrabold text-slate-900">2. 초단위 씬 콘티 & 홍보 문구</h2>
+                            <span id="preview-channel-badge" class="px-2.5 py-1 rounded-lg text-[11px] font-bold lemon-pill">인스타그램 릴스용</span>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-slate-500">콘티 제목</label>
+                            <input id="preview-title" type="text" value="[카페·디저트] '비 오는 날 수제 라떼 1+1' 10초 숏폼 콘티" class="w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3.5 py-2 text-sm font-bold text-slate-900">
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                            <div class="p-3 rounded-xl bg-yellow-50/70 border border-yellow-200 space-y-1">
+                                <p class="font-extrabold text-amber-800">0~3초 (훅)</p>
+                                <input id="scene-hook-input" type="text" value="탑뷰 컵 붓기 + 빗소리 컷" class="w-full bg-white border border-yellow-200 rounded-lg px-2 py-1.5 text-[11px] text-slate-700">
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                                <p class="font-extrabold text-slate-800">3~7초 (본문)</p>
+                                <input id="scene-body-input" type="text" value="라떼 층·질감 클로즈업" class="w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-[11px] text-slate-700">
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                                <p class="font-extrabold text-slate-800">7~10초 (CTA)</p>
+                                <input id="scene-cta-input" type="text" value="1+1 혜택 시간·위치 자막" class="w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-[11px] text-slate-700">
+                            </div>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-slate-500">SNS 홍보 캡션 (직접 수정 가능)</label>
+                            <textarea id="preview-body" rows="4" class="w-full rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-xs text-slate-700 leading-relaxed">비 오는 날엔 따뜻한 수제 라떼 한 잔이죠! 오늘 매장 방문 시 수제 라떼 1+1 혜택을 드립니다. 3초 숏폼으로 먼저 확인해 보세요.</textarea>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-slate-500">해시태그</label>
+                            <input id="preview-hashtags" type="text" value="#숏폼추천 #비오는날카페 #수제라떼1플러스1 #동네핫플" class="w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3.5 py-2 text-xs font-semibold text-amber-700">
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                            <button onclick="copyStudioText()" class="py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 transition">
+                                전체 복사
+                            </button>
+                            <button onclick="loadIntoArViewer()" class="py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-extrabold transition">
+                                AR 뷰어에 적용
+                            </button>
+                            <button onclick="saveStudioItem()" class="py-2.5 rounded-xl lemon-btn text-xs font-extrabold transition shadow-sm">
+                                DB 저장 & 일정 예약
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. AR 3x3 촬영 뷰어 -->
+            <section id="tab-ar" class="hidden space-y-6">
+                <div class="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <h2 class="text-base font-extrabold text-slate-900">스마트폰 AR 3x3 그리드 촬영 가이드 뷰어</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">구간을 선택하면 3x3 구도 하이라이트와 자막 안전영역 가이드가 갱신됩니다.</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="switchArSegment(0)" id="ar-seg-0" class="px-3 py-1.5 rounded-xl text-xs font-bold lemon-btn">0~3초 훅</button>
+                            <button onclick="switchArSegment(1)" id="ar-seg-1" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600">3~7초 본문</button>
+                            <button onclick="switchArSegment(2)" id="ar-seg-2" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600">7~10초 CTA</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                        <div class="lg:col-span-7 bg-slate-900 rounded-3xl p-5 text-white space-y-4">
+                            <div class="flex items-center justify-between text-xs">
+                                <span id="ar-timer-badge" class="font-bold text-yellow-300">REC · 00:00 - 00:03</span>
+                                <span class="px-2.5 py-0.5 rounded-full bg-white/10 text-[10px]">3x3 GRID + SAFE ZONE</span>
+                            </div>
+
+                            <div class="h-72 rounded-2xl border border-yellow-300/40 bg-slate-950 grid grid-cols-3 grid-rows-3 overflow-hidden">
+                                <div id="cell-0" class="border border-white/10 p-2 text-[10px] text-slate-400">상단 좌측</div>
+                                <div id="cell-1" class="border border-yellow-300 bg-yellow-300/20 p-2 flex items-center justify-center text-center">
+                                    <span id="cell-1-label" class="px-2 py-1 rounded bg-yellow-300 text-slate-950 font-extrabold text-[10px]">0~3초 훅 포인트</span>
+                                </div>
+                                <div id="cell-2" class="border border-white/10 p-2 text-[10px] text-slate-400 text-right">상단 우측</div>
+                                <div id="cell-3" class="border border-white/10"></div>
+                                <div id="cell-4" class="border border-white/10 flex items-center justify-center text-[10px] text-slate-400">중앙 기준선</div>
+                                <div id="cell-5" class="border border-white/10"></div>
+                                <div id="cell-6" class="border border-white/10"></div>
+                                <div id="cell-7" class="border border-white/10 p-2 flex items-end justify-center">
+                                    <span id="ar-caption-overlay" class="px-3 py-1 rounded-lg bg-slate-900 border border-yellow-300/50 text-[11px] font-bold text-yellow-200 text-center">
+                                        탑뷰 컵 붓기 + 빗소리 컷
+                                    </span>
+                                </div>
+                                <div id="cell-8" class="border border-white/10"></div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-5 bg-yellow-50/60 border border-yellow-200 rounded-2xl p-5 space-y-4">
+                            <h3 class="text-sm font-black text-slate-900">현장 촬영 체크리스트</h3>
+                            <ul class="space-y-2.5 text-xs text-slate-700">
+                                <li class="flex items-start space-x-2">
+                                    <i class="fa-solid fa-check text-amber-600 mt-0.5"></i>
+                                    <span>첫 3초 안에 움직임(붓기·열기·펼치기)이나 반전 질문을 넣어 이탈을 줄이세요.</span>
+                                </li>
+                                <li class="flex items-start space-x-2">
+                                    <i class="fa-solid fa-check text-amber-600 mt-0.5"></i>
+                                    <span>하단·우측 끝에는 좋아요/공유/캡션 UI가 겹치므로 핵심 자막은 중앙에 배치하세요.</span>
+                                </li>
+                                <li class="flex items-start space-x-2">
+                                    <i class="fa-solid fa-check text-amber-600 mt-0.5"></i>
+                                    <span>촬영을 마쳤다면 캘린더 탭에서 업로드 일정을 확인하세요.</span>
+                                </li>
+                            </ul>
+                            <button onclick="switchTab('calendar')" class="w-full py-2.5 rounded-xl lemon-btn text-xs font-extrabold transition">
+                                마케팅 캘린더에서 일정 확인 →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. 캘린더 -->
+            <section id="tab-calendar" class="hidden space-y-6">
+                <div class="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <h2 class="text-base font-extrabold text-slate-900">숏폼 & 마케팅 발행 캘린더</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">저장된 촬영·발행 일정을 날짜와 채널별로 관리합니다.</p>
+                        </div>
+                        <button onclick="switchTab('studio')" class="px-4 py-2 rounded-xl lemon-btn text-xs font-bold transition self-start sm:self-auto">
+                            + 일정 추가
+                        </button>
+                    </div>
+                    <div id="calendar-cards-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+                </div>
+            </section>
+
+            <!-- 5. 고객 리뷰 답글 -->
+            <section id="tab-reviews" class="hidden space-y-6">
+                <div class="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm space-y-6">
+                    <div>
+                        <h2 class="text-base font-extrabold text-slate-900">AI 고객 리뷰 감성 분석 & 답글 관리</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">고객 리뷰 톤에 맞춘 추천 답글을 수정하고 저장하세요.</p>
+                    </div>
+                    <div id="reviews-list-container" class="space-y-4"></div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 hidden bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl border border-yellow-300/40 flex items-center space-x-2">
+        <i class="fa-solid fa-circle-check text-yellow-300"></i>
+        <span id="toast-message">처리되었습니다.</span>
+    </div>
+
+    <script>
+        const DB_KEY = 'shortform_on_dashboard_db_v1';
+        const SESSION_KEY = 'shortform_on_session';
+
+        const defaultDB = {
+            category: '카페·디저트',
+            channel: '인스타그램 릴스',
+            contents: [
+                {
+                    id: 1,
+                    channel: '인스타그램 릴스',
+                    category: '카페·디저트',
+                    title: '[카페·디저트] \'비 오는 날 수제 라떼 1+1\' 10초 숏폼 콘티',
+                    body: '비 오는 날엔 따뜻한 수제 라떼 한 잔이죠! 오늘 매장 방문 시 수제 라떼 1+1 혜택을 드립니다.',
+                    hashtags: '#숏폼추천 #비오는날카페 #수제라떼1플러스1',
+                    date: '2026-11-25',
+                    status: '예약됨',
+                    scenes: ['탑뷰 컵 붓기 + 빗소리 컷', '라떼 층·질감 클로즈업', '1+1 혜택 시간·위치 자막']
+                },
+                {
+                    id: 2,
+                    channel: '유튜브 쇼츠',
+                    category: '음식점·배달',
+                    title: '[음식점·배달] \'점심 특선 3초 훅\' 쇼츠 콘티',
+                    body: '지글지글 철판 사운드와 함께 점심 특선 메뉴 구성을 짧고 선명하게 보여줍니다.',
+                    hashtags: '#점심특선 #쇼츠콘티 #동네맛집',
+                    date: '2026-11-26',
+                    status: '예약됨',
+                    scenes: ['철판 사운드 + 클로즈업', '반찬·메인 한상 컷', '점심 시간대 안내 자막']
+                },
+                {
+                    id: 3,
+                    channel: '당근마켓',
+                    category: '공방·클래스',
+                    title: '[공방·클래스] 주말 원데이클래스 잔여석 안내',
+                    body: '완성작 디테일을 먼저 보여주고 주말 잔여 2자리 소식을 이웃들에게 알립니다.',
+                    hashtags: '#원데이클래스 #주말취미 #당근단골',
+                    date: '2026-11-27',
+                    status: '발행완료',
+                    scenes: ['완성 작품 클로즈업', '작업 과정 타임랩스', '잔여석·예약 안내 자막']
+                }
+            ],
+            reviews: [
+                {
+                    id: 1,
+                    author: '김지은',
+                    platform: '네이버 영수증',
+                    rating: '★★★★★',
+                    comment: '"릴스 보고 찾아왔는데 크림 라떼가 정말 고소하고 매장 분위기도 좋아요!"',
+                    reply: '지은님, 숏폼 영상 보고 귀한 발걸음 해 주셔서 감사합니다! 다음에도 따뜻한 음료와 기분 좋은 시간으로 보답할게요.',
+                    answered: true
+                },
+                {
+                    id: 2,
+                    author: '박현우',
+                    platform: '배달의민족',
+                    rating: '★★★',
+                    comment: '"음료 맛은 좋은데 주말 피크타임이라 대기 시간이 조금 길었어요."',
+                    reply: '현우님, 주말 피크타임 대기 시간으로 불편을 드려 죄송합니다. 피크타임 제조 동선을 점검해 더 빠르게 준비하겠습니다.',
+                    answered: false
+                }
+            ]
+        };
+
+        function loadDB() {
+            try {
+                const raw = localStorage.getItem(DB_KEY);
+                return raw ? { ...structuredClone(defaultDB), ...JSON.parse(raw) } : structuredClone(defaultDB);
+            } catch {
+                return structuredClone(defaultDB);
+            }
+        }
+
+        let db = loadDB();
+
+        function saveDB() {
+            localStorage.setItem(DB_KEY, JSON.stringify(db));
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = msg;
+            toast.classList.remove('hidden');
+            clearTimeout(window.__t);
+            window.__t = setTimeout(() => toast.classList.add('hidden'), 2500);
+        }
+
+        function initSessionInfo() {
+            try {
+                const sess = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}');
+                if (sess.user) {
+                    document.getElementById('session-user-chip').textContent = sess.user;
+                }
+                if (sess.category) {
+                    db.category = sess.category;
+                }
+            } catch {}
+            document.getElementById('studio-category').value = db.category;
+            document.getElementById('header-category-badge').textContent = db.category;
+        }
+
+        function logoutAndReturn() {
+            localStorage.removeItem(SESSION_KEY);
+            window.location.href = 'index.html';
+        }
+
+        const tabs = {
+            overview: { title: '대시보드 개요', nav: 'nav-overview', sec: 'tab-overview' },
+            studio: { title: '숏폼 콘티 · 카피 스튜디오', nav: 'nav-studio', sec: 'tab-studio' },
+            ar: { title: 'AR 3x3 촬영 뷰어', nav: 'nav-ar', sec: 'tab-ar' },
+            calendar: { title: '마케팅 캘린더', nav: 'nav-calendar', sec: 'tab-calendar' },
+            reviews: { title: 'AI 고객 리뷰 답글', nav: 'nav-reviews', sec: 'tab-reviews' }
+        };
+
+        function switchTab(key) {
+            Object.entries(tabs).forEach(([k, cfg]) => {
+                document.getElementById(cfg.sec).classList.toggle('hidden', k !== key);
+                document.getElementById(cfg.nav).className = k === key
+                    ? 'w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm transition lemon-active-nav'
+                    : 'w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition';
+            });
+            document.getElementById('header-page-title').textContent = tabs[key].title;
+            renderAll();
+        }
+
+        function updateCategory(val) {
+            db.category = val;
+            document.getElementById('header-category-badge').textContent = val;
+            saveDB();
+        }
+
+        function selectChannel(ch) {
+            db.channel = ch;
+            ['인스타그램 릴스', '유튜브 쇼츠', '당근마켓'].forEach(item => {
+                document.getElementById(`ch-${item}`).className = item === ch
+                    ? 'py-2.5 rounded-xl text-xs font-bold lemon-btn transition'
+                    : 'py-2.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 transition';
+            });
+            document.getElementById('preview-channel-badge').textContent = `${ch}용`;
+        }
+
+        function applyMission() {
+            document.getElementById('studio-category').value = '카페·디저트';
+            updateCategory('카페·디저트');
+            selectChannel('인스타그램 릴스');
+            document.getElementById('studio-keyword').value = '비 오는 날 수제 라떼 1+1';
+            generateStudioPlan();
+            switchTab('studio');
+            showToast('오늘의 미션 콘티를 생성했습니다.');
+        }
+
+        function generateStudioPlan() {
+            const cat = document.getElementById('studio-category').value;
+            const kw = document.getElementById('studio-keyword').value.trim() || '매장 핵심 메뉴';
+            document.getElementById('preview-title').value = `[${cat}] '${kw}' 10초 숏폼 콘티`;
+            document.getElementById('scene-hook-input').value = `${kw} 3초 시선 고정 컷`;
+            document.getElementById('scene-body-input').value = `핵심 디테일·현장 분위기 컷`;
+            document.getElementById('scene-cta-input').value = `${kw} 참여 방법·매장 안내 자막`;
+            document.getElementById('preview-body').value = `${cat} 매장에서 준비한 '${kw}' 소식입니다. 3초 훅부터 10초 CTA까지 구도에 맞춰 촬영하고 바로 공유해 보세요.`;
+            document.getElementById('preview-hashtags').value = `#숏폼콘티 #${cat.replace(/[^가-힣]/g, '')} #AR3x3가이드`;
+            showToast('Rule-LLM 콘티 초안이 업데이트되었습니다.');
+        }
+
+        function copyStudioText() {
+            const text = [
+                document.getElementById('preview-title').value,
+                `0-3s: ${document.getElementById('scene-hook-input').value}`,
+                `3-7s: ${document.getElementById('scene-body-input').value}`,
+                `7-10s: ${document.getElementById('scene-cta-input').value}`,
+                document.getElementById('preview-body').value,
+                document.getElementById('preview-hashtags').value
+            ].join('\n');
+            navigator.clipboard?.writeText(text);
+            showToast('콘티와 문구가 복사되었습니다.');
+        }
+
+        function loadIntoArViewer() {
+            const hook = document.getElementById('scene-hook-input').value;
+            db.contents[0].scenes = [
+                hook,
+                document.getElementById('scene-body-input').value,
+                document.getElementById('scene-cta-input').value
+            ];
+            saveDB();
+            switchArSegment(0);
+            switchTab('ar');
+            showToast('AR 3x3 뷰어에 콘티가 반영되었습니다.');
+        }
+
+        function saveStudioItem() {
+            const item = {
+                id: Date.now(),
+                channel: db.channel,
+                category: document.getElementById('studio-category').value,
+                title: document.getElementById('preview-title').value.trim(),
+                body: document.getElementById('preview-body').value.trim(),
+                hashtags: document.getElementById('preview-hashtags').value.trim(),
+                date: document.getElementById('studio-date').value || '2026-11-25',
+                status: '예약됨',
+                scenes: [
+                    document.getElementById('scene-hook-input').value,
+                    document.getElementById('scene-body-input').value,
+                    document.getElementById('scene-cta-input').value
+                ]
+            };
+            db.contents.unshift(item);
+            saveDB();
+            renderAll();
+            switchTab('overview');
+            showToast('콘티와 일정이 저장되었습니다.');
+        }
+
+        function switchArSegment(segIdx) {
+            const timers = ['REC · 00:00 - 00:03', 'REC · 00:03 - 00:07', 'REC · 00:07 - 00:10'];
+            const labels = ['0~3초 훅 포인트', '3~7초 본문 컷', '7~10초 CTA 안내'];
+            const scenes = db.contents[0]?.scenes || ['탑뷰 컵 붓기 + 빗소리 컷', '라떼 층·질감 클로즈업', '1+1 혜택 시간·위치 자막'];
+
+            [0, 1, 2].forEach(i => {
+                document.getElementById(`ar-seg-${i}`).className = i === segIdx
+                    ? 'px-3 py-1.5 rounded-xl text-xs font-bold lemon-btn'
+                    : 'px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600';
+            });
+            document.getElementById('ar-timer-badge').textContent = timers[segIdx];
+            document.getElementById('cell-1-label').textContent = labels[segIdx];
+            document.getElementById('ar-caption-overlay').textContent = scenes[segIdx];
+        }
+
+        function saveReviewReply(id) {
+            const rev = db.reviews.find(r => r.id === id);
+            const val = document.getElementById(`rev-input-${id}`)?.value;
+            if (!rev || val === undefined) return;
+            rev.reply = val;
+            rev.answered = true;
+            saveDB();
+            renderAll();
+            showToast(`${rev.author} 고객님 답글이 저장되었습니다.`);
+        }
+
+        function renderOverview() {
+            document.getElementById('kpi-content-count').textContent = `${db.contents.length}건`;
+            document.getElementById('kpi-unanswered-reviews').textContent = `${db.reviews.filter(r => !r.answered).length}건`;
+
+            document.getElementById('overview-content-list').innerHTML = db.contents.map(c => {
+                const badge = c.status === '발행완료'
+                    ? `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">발행완료</span>`
+                    : `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold lemon-pill">예약됨</span>`;
+                return `
+                    <div class="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="space-y-1 min-w-0">
+                            <div class="flex items-center flex-wrap gap-1.5 text-[11px]">
+                                <span class="font-bold text-amber-700">${c.channel}</span>
+                                <span class="text-slate-400">${c.category}</span>
+                                <span class="font-bold text-slate-900 truncate">${c.title}</span>
+                            </div>
+                            <p class="text-xs text-slate-500 truncate">${c.body}</p>
+                        </div>
+                        <div class="flex items-center space-x-3 shrink-0">
+                            <span class="text-xs text-slate-400">${c.date}</span>
+                            ${badge}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderCalendar() {
+            document.getElementById('calendar-cards-grid').innerHTML = db.contents.map(c => `
+                <div class="border border-slate-200/90 rounded-2xl p-4 bg-white space-y-2 shadow-sm">
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span class="font-bold text-slate-700">${c.date}</span>
+                        <span class="px-2 py-0.5 rounded-md font-bold lemon-pill">${c.channel}</span>
+                    </div>
+                    <h3 class="text-xs font-extrabold text-slate-900">${c.title}</h3>
+                    <p class="text-xs text-slate-500 line-clamp-2">${c.body}</p>
+                    <p class="text-[11px] font-semibold text-amber-700 truncate">${c.hashtags}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderReviews() {
+            document.getElementById('reviews-list-container').innerHTML = db.reviews.map(r => {
+                const statusBadge = r.answered
+                    ? `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">답글 완료</span>`
+                    : `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold lemon-pill">답글 필요</span>`;
+                return `
+                    <div class="border border-slate-200/90 rounded-2xl p-5 bg-white space-y-3.5 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div class="text-xs space-x-2">
+                                <span class="font-extrabold text-slate-900">${r.author}</span>
+                                <span class="text-slate-400">· ${r.platform}</span>
+                                <span class="text-amber-400">${r.rating}</span>
+                            </div>
+                            ${statusBadge}
+                        </div>
+                        <div class="rounded-xl bg-slate-50 px-4 py-3 text-xs text-slate-700">${r.comment}</div>
+                        <textarea id="rev-input-${r.id}" rows="2" class="w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-700 focus:outline-none focus:border-yellow-400">${r.reply}</textarea>
+                        <div class="flex justify-end">
+                            <button onclick="saveReviewReply(${r.id})" class="px-4 py-2 rounded-xl lemon-btn text-xs font-bold transition">
+                                답글 저장하기
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderAll() {
+            renderOverview();
+            renderCalendar();
+            renderReviews();
+        }
+
+        initSessionInfo();
+        selectChannel(db.channel);
+        renderAll();
+    </script>
+</body>
+</html>
